@@ -96,6 +96,7 @@ export function PreviewStep({ data, onNext, onBack }: PreviewStepProps) {
       await addKnowledge(formData);
 
       toast.success("Your feedback has been shared with the avatar.");
+      localStorage.removeItem("olivData");
       onNext();
     } catch (error) {
       console.error(error);

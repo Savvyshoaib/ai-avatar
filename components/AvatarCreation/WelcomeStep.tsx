@@ -3,12 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Briefcase, MessageSquare, Clock } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 type WelcomeStepProps = {
   onNext: () => void;
 };
 
 export function WelcomeStep({ onNext }: WelcomeStepProps) {
+   const searchParams = useSearchParams();
+    const q = searchParams.get("q");
+  
+    let decoded = "";
+    try {
+      decoded = Buffer.from(q || "", "base64").toString("utf8");
+      localStorage.setItem("olivData", decoded);
+    } catch (e) {
+      console.error("Decode error:::", e);
+    }
+
   return (
     <Card className="p-8 md:p-12 text-center border-0 shadow-none">
       <div className="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#4454FF]">

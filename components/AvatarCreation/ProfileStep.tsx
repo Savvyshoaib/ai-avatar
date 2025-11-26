@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { AvatarData } from "@/app/avatar-creation/page";
 import type { ChangeEvent, FormEvent } from "react";
+import { useEffect } from "react";
 
 type ProfileStepProps = {
   data: AvatarData;
@@ -17,6 +18,22 @@ type ProfileStepProps = {
 };
 
 export function ProfileStep({ data, updateData, onNext, onBack }: ProfileStepProps) {
+  
+  useEffect(() => {
+    const storedData = localStorage.getItem("olivData");
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        if (parsed.fullName) updateData({ fullName: parsed.fullName });
+        if (parsed.about) updateData({ bio: parsed.about });
+        if (parsed.location) updateData({ location: parsed.location });
+        // Optional: add email, phoneNumber if needed
+      } catch (e) {
+        console.error("Failed to parse olivData from localStorage", e);
+      }
+    }
+  }, [updateData]);
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onNext();
@@ -37,7 +54,7 @@ export function ProfileStep({ data, updateData, onNext, onBack }: ProfileStepPro
           <Input
             label="Full Name"
             id="fullName"
-            value={data.fullName ?? ""}
+            value={data?.fullName ?? ""}
             onChange={(value: string) => updateData({ fullName: value })}
             placeholder="e.g. Sarah Johnson"
             type="text"

@@ -17,13 +17,26 @@ type HandleStepProps = {
   onBack: () => void;
 };
 
-export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps) {
+export function HandleStep({
+  data,
+  updateData,
+  onNext,
+  onBack,
+}: HandleStepProps) {
   const [handleValue, setHandleValue] = useState<string>(data.handle);
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [hovered, setHovered] = useState<boolean>(false);
   const [buttonText, setButtonText] = useState<string>("Confirm");
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [host, setHost] = useState<string>("");
+  let candidateId: string = "";
+
+  const storedData = localStorage.getItem("olivData");
+
+  if (storedData) {
+    const parsed = JSON.parse(storedData);
+    candidateId = parsed.id;
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -61,7 +74,7 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
 
       await createAvatar({
         user_name: handleValue,
-        oliv_id,
+        oliv_id: candidateId,
       });
 
       // If we reach here, API returned 2xx, so success
@@ -69,7 +82,6 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
       setIsAvailable(true);
       setButtonText("Continue →");
       updateData({ handle: handleValue, handleVerified: true, oliv_id });
-
     } catch (error: any) {
       // Axios errors have error.response
       const resData = error.response?.data;
@@ -79,7 +91,12 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
         const usernameError = resData.errors?.user_name?.[0];
         const olivError = resData.errors?.oliv_id?.[0];
 
-        toast.error(usernameError || olivError || resData.message || "This link is already taken");
+        toast.error(
+          usernameError ||
+            olivError ||
+            resData.message ||
+            "This link is already taken"
+        );
         setIsAvailable(false);
         setButtonText("Confirm");
       } else {
@@ -93,9 +110,7 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
     } finally {
       setIsChecking(false);
     }
-
   };
-
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -104,12 +119,19 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
 
   return (
     <Card className="p-8 md:p-10 border-0 shadow-elegant">
-      <Button variant="ghost" size="sm" onClick={onBack} className="mb-6 cursor-pointer">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack}
+        className="mb-6 cursor-pointer"
+      >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back
       </Button>
 
-      <h2 className="text-2xl md:text-3xl font-bold mb-2">Claim your public avatar link</h2>
+      <h2 className="text-2xl md:text-3xl font-bold mb-2">
+        Claim your public avatar link
+      </h2>
       <p className="text-muted-foreground mb-8">
         Recruiters will use this link to chat with your avatar
       </p>
@@ -130,7 +152,9 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
               id="handle"
               value={handleValue}
               onChange={(value: string) => {
-                const sanitizedValue = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                const sanitizedValue = value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9-]/g, "");
                 setHandleValue(sanitizedValue);
                 setIsAvailable(null);
                 setButtonText("Confirm");
@@ -162,15 +186,21 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
 
           {handleValue && (
             <p
-              className={`text-sm mt-2 ${isChecking ? "text-gray-500" : isAvailable ? "text-green-600" : "text-red-500"}`}
+              className={`text-sm mt-2 ${
+                isChecking
+                  ? "text-gray-500"
+                  : isAvailable
+                  ? "text-green-600"
+                  : "text-red-500"
+              }`}
             >
               {isChecking
                 ? "Checking availability..."
                 : isAvailable
-                  ? "This link is available!"
-                  : isAvailable === false
-                    ? "This link is already taken"
-                    : ""}
+                ? "This link is available!"
+                : isAvailable === false
+                ? "This link is already taken"
+                : ""}
             </p>
           )}
         </div>
@@ -178,7 +208,9 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
         {handleValue && isAvailable && (
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 bg-oliv-light">
             <p className="text-sm font-medium mb-1">Your Avatar URL</p>
-            <p className="text-primary font-mono text-color-oliv">{host}/{handleValue}</p>
+            <p className="text-primary font-mono text-color-oliv">
+              {host}/{handleValue}
+            </p>
           </div>
         )}
 
@@ -189,7 +221,11 @@ export function HandleStep({ data, updateData, onNext, onBack }: HandleStepProps
           variant="olivBtn"
           disabled={!handleValue || isChecking}
         >
-          {isChecking ? <Loader2 className="w-5 h-5 animate-spin" /> : buttonText}
+          {isChecking ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            buttonText
+          )}
         </Button>
       </form>
     </Card>
