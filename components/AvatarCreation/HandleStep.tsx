@@ -28,21 +28,7 @@ export function HandleStep({
   const [hovered, setHovered] = useState<boolean>(false);
   const [buttonText, setButtonText] = useState<string>("Confirm");
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
-  const [host, setHost] = useState<string>("");
-  let candidateId: string = "";
-
-  const storedData = localStorage.getItem("olivData");
-
-  if (storedData) {
-    const parsed = JSON.parse(storedData);
-    candidateId = parsed.id;
-  }
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setHost(window.location.host);
-    }
-  }, []);
+  const url = new URL(window.location.href);
 
   // Restore verified state when coming back to this step
   useEffect(() => {
@@ -74,7 +60,7 @@ export function HandleStep({
 
       await createAvatar({
         user_name: handleValue,
-        oliv_id: candidateId,
+        oliv_id,
       });
 
       // If we reach here, API returned 2xx, so success
@@ -118,7 +104,7 @@ export function HandleStep({
   };
 
   return (
-    <Card className="p-8 md:p-10 border-0 shadow-elegant">
+    <Card className="p-8 border-0 md:p-10 shadow-elegant">
       <Button
         variant="ghost"
         size="sm"
@@ -129,10 +115,10 @@ export function HandleStep({
         Back
       </Button>
 
-      <h2 className="text-2xl md:text-3xl font-bold mb-2">
+      <h2 className="mb-2 text-2xl font-bold md:text-3xl">
         Claim your public avatar link
       </h2>
-      <p className="text-muted-foreground mb-8">
+      <p className="mb-8 text-muted-foreground">
         Recruiters will use this link to chat with your avatar
       </p>
 
@@ -144,8 +130,8 @@ export function HandleStep({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-              {host}/
+            <div className="absolute font-medium -translate-y-1/2 left-3 top-1/2 text-muted-foreground">
+              {url.host}/
             </div>
 
             <Input
@@ -163,7 +149,7 @@ export function HandleStep({
               placeholder="yourname"
               className={`pr-10`}
               style={{
-                paddingLeft: `${host.length * 8 + 28}px`,
+                paddingLeft: `${url.host.length * 8 + 28}px`,
               }}
               required
             />
@@ -177,7 +163,7 @@ export function HandleStep({
                   setButtonText("Confirm");
                   updateData({ handle: "", handleVerified: false });
                 }}
-                className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive transition"
+                className="absolute transition -translate-y-1/2 cursor-pointer right-3 top-1/2 text-muted-foreground hover:text-destructive"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -206,10 +192,10 @@ export function HandleStep({
         </div>
 
         {handleValue && isAvailable && (
-          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 bg-oliv-light">
-            <p className="text-sm font-medium mb-1">Your Avatar URL</p>
-            <p className="text-primary font-mono text-color-oliv">
-              {host}/{handleValue}
+          <div className="p-4 border rounded-lg bg-primary/5 border-primary/20 bg-oliv-light">
+            <p className="mb-1 text-sm font-medium">Your Avatar URL</p>
+            <p className="font-mono text-primary text-color-oliv">
+              {url.host}/{handleValue}
             </p>
           </div>
         )}
