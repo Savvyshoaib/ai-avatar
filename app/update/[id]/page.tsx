@@ -10,6 +10,7 @@ import { increaseKnowledge } from "@/lib/api/avatarApi";
 import { useAppSelector } from "@/lib/store/hooks";
 import { toast } from "sonner";
 import React from "react";
+import Link from "next/link";
 
 export default function UpdateChat({
   params,
@@ -203,6 +204,18 @@ export default function UpdateChat({
             </div>
           </Card>
         </Card>
+
+        <div className="flex justify-center">
+          <Link href={`/${id}`}>
+            <Button
+              size="lg"
+              variant="olivBtn"
+              className="w-full cursor-pointer md:w-auto px-8 bg-[#4454FF] hover:bg-[#4454FF]/90 text-white"
+            >
+              Chat with avatar
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

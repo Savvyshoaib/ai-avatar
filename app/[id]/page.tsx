@@ -12,6 +12,7 @@ import { useAppSelector } from "@/lib/store/hooks";
 import { toast } from "sonner";
 import parse from "html-react-parser";
 import { marked } from "marked";
+import Link from "next/link";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   type TrainChatMessage = {
@@ -318,6 +319,18 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             </div>
           </Card>
         </Card>
+
+        <div className="flex justify-center">
+          <Link href={`/update/${id}`}>
+            <Button
+              size="lg"
+              variant="olivBtn"
+              className="w-full cursor-pointer md:w-auto px-8 bg-[#4454FF] hover:bg-[#4454FF]/90 text-white"
+            >
+              Update your avatar
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
