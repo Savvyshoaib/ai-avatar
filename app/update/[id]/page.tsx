@@ -212,7 +212,7 @@ export default function UpdateChat({
               variant="olivBtn"
               className="w-full cursor-pointer md:w-auto px-8 bg-[#4454FF] hover:bg-[#4454FF]/90 text-white"
             >
-              Chat with avatar
+              Chat avatar
             </Button>
           </Link>
         </div>
