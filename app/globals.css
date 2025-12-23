@@ -179,3 +179,8 @@ background: #F7F6FE;
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+
+div[style="min-width:100%;display:table"] {
+    display: block !important;
+}

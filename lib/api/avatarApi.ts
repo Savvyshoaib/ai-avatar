@@ -5,6 +5,7 @@ import Api from './axiosInstance';
 export interface CreateAvatarPayload {
   user_name: string;
   oliv_id: string;
+  email: string;
 }
 
 export interface UploadDocumentAvatarPayload {
@@ -34,9 +35,27 @@ export interface AvatarResponse {
   [key: string]: any;
 }
 
+export interface AvatarDetailsRecord {
+  name?: string;
+  agent_id?: string;
+  headline?: string;
+  location?: string;
+  bio?: string;
+  skills?: string[];
+  personality?: string;
+  about_yourself?: string;
+}
+
+export interface AvatarDetailsResponse {
+  success: boolean;
+  data?: AvatarDetailsRecord[];
+  message?: string;
+}
+
 export interface ChatAvatarPayload {
   user_name: string;
   message: string;
+  email: string;
 }
 
 export interface IncreaseKnowledgePayload {
@@ -44,15 +63,54 @@ export interface IncreaseKnowledgePayload {
   knowledge: string;
 }
 
+export interface ChatHistoryMessage {
+  id: number;
+  message: string;
+  message_type: string;
+  created_at: string;
+  sender?: {
+    id: number;
+    user_name: string;
+    type: "user" | "agent";
+  };
+}
+
+export interface ChatHistoryRecord {
+  conversation_id: number;
+  user?: {
+    id: number;
+    user_name: string;
+    email?: string;
+    type?: string;
+  };
+  messages: ChatHistoryMessage[];
+}
+
+export interface ChatHistoryResponse {
+  success: boolean;
+  data?: {
+    chats: ChatHistoryRecord[];
+  };
+  message?: string;
+}
+
 // Avatar API functions
 export const createAvatar = (payload: CreateAvatarPayload): Promise<AxiosResponse<AvatarResponse>> => {
   const formData = new FormData();
   formData.append("user_name", payload.user_name);
   formData.append("oliv_id", payload.oliv_id);
+  formData.append("email", payload.email);
 
   return Api.post("/avatar/create", formData);
 };
 
+export const getAvatarDetails = (
+  userName: string
+): Promise<AxiosResponse<AvatarDetailsResponse>> => {
+  return Api.get(`/avatar/details`, {
+    params: { user_name: userName },
+  });
+};
 
 export const uploadAvatarDocument = (payload: UploadDocumentAvatarPayload) => {
   const formData = new FormData();
@@ -82,11 +140,11 @@ export const addKnowledge = (payload: AddKnowledgePayload) => {
   return Api.post(`/avatar/add-knowledge`, formData);
 };
 
-
 export const chatAvatar = (payload: ChatAvatarPayload) => {
   const formData = new FormData();
   formData.append("user_name", payload.user_name);
   formData.append("message", payload.message);
+  formData.append("email", payload.email);
 
   return Api.post(`/avatar/${payload.user_name}/chat`, formData);
 };
@@ -97,4 +155,10 @@ export const increaseKnowledge = (payload: IncreaseKnowledgePayload) => {
   formData.append("knowledge", payload.knowledge);
 
   return Api.post(`/avatar/increase-knowledge`, formData);
+};
+
+export const getChatHistory = (
+  userName: string
+): Promise<AxiosResponse<ChatHistoryResponse>> => {
+  return Api.get(`/avatar/${userName}/chat-history`);
 };

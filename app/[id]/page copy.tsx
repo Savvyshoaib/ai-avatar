@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import parse from "html-react-parser";
 import { marked } from "marked";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   type TrainChatMessage = {
@@ -25,66 +24,10 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [messages, setMessages] = useState<TrainChatMessage[]>([]);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
- 
-
-
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
   const [errorIndex, setErrorIndex] = useState(0);
-  // const [olivData, setOlivData] = useState(DEFAULT_OLIV_DATA);
-
-
-  const DEFAULT_OLIV_DATA = {
-  candidate: {
-    username: "guest",
-    email: "guest@yopmail.com",
-    fullName: "",
-    about: "",
-    location: "",
-    phoneNumber: "",
-    id: "",
-  },
-  employer: {
-    email: "guestemp@yopmail.com",
-  },
-};
-
-let olivData = DEFAULT_OLIV_DATA;
-
-// decode from query param q if exists
-const q = useSearchParams().get("q");
-if (q) {
-  try {
-    const decoded = Buffer.from(q, "base64").toString("utf8");
-    const parsed = JSON.parse(decoded); // parse once
-    olivData = { 
-      candidate: { ...DEFAULT_OLIV_DATA.candidate, ...parsed.candidate },
-      employer: { ...DEFAULT_OLIV_DATA.employer, ...parsed.employer },
-    };
-    localStorage.setItem("olivData", JSON.stringify(olivData)); // store proper object
-  } catch (e) {
-    console.error("Decode error:::", e);
-    localStorage.setItem("olivData", JSON.stringify(DEFAULT_OLIV_DATA));
-  }
-} else {
-  // if localStorage empty
-  const stored = localStorage.getItem("olivData");
-  if (stored) {
-    try {
-      olivData = JSON.parse(stored);
-    } catch {
-      olivData = DEFAULT_OLIV_DATA;
-      localStorage.setItem("olivData", JSON.stringify(DEFAULT_OLIV_DATA));
-    }
-  } else {
-    localStorage.setItem("olivData", JSON.stringify(DEFAULT_OLIV_DATA));
-  }
-}
-
-
-  const getOlivData = JSON.parse(localStorage.getItem("olivData") || "{}");
-
 
   const errorMessages = [
     "Hmm… something went wrong on my side. Maybe the agent ID didn’t respond correctly. Could you try again?",
@@ -92,8 +35,6 @@ if (q) {
     "I'm trying to reconnect to the agent, but the request failed again. Possibly an incorrect username or session error — try once more?",
     "Connection dropped with the agent. It could be a wrong agent ID or temporary network issue. Please try again differently.",
   ];
-  
-  
 
   useEffect(() => {
     // Always scroll to bottom smoothly when messages update
@@ -145,18 +86,6 @@ if (q) {
   //     }
   // };
 
-  //  const searchParams = useSearchParams();
-  //     const q = searchParams.get("q");
-    
-  //     let decoded = "";
-  //     try {
-  //       decoded = Buffer.from(q || "", "base64").toString("utf8");
-  //       localStorage.setItem("olivData", decoded);
-  //     } catch (e) {
-  //       console.error("Decode error:::", e);
-  //     }
-  
-
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -186,7 +115,6 @@ if (q) {
         const response = await chatAvatar({
           user_name: id,
           message: trimmedInput,
-          email: getOlivData.employer.email
         });
 
         const reply =
@@ -219,7 +147,6 @@ if (q) {
       const response = await chatAvatar({
         user_name: id,
         message: trimmedInput,
-        email: getOlivData.employer.email
       });
 
       const reply =

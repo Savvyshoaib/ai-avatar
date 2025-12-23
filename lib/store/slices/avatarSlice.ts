@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { getAvatarDetails, AvatarDetailsRecord } from "@/lib/api/avatarApi";
 
 interface FileMetadata {
     name: string;
@@ -22,6 +23,9 @@ interface AvatarState {
     voiceNote?: FileMetadata | null;
     handleVerified: boolean;
     oliv_id: string | null;
+    detailsLoading: boolean;
+    detailsFetched: boolean;
+    lastFetchedHandle?: string | null;
 }
 
 const initialState: AvatarState = {
@@ -39,7 +43,23 @@ const initialState: AvatarState = {
     voiceNote: null,
     handleVerified: false,
     oliv_id: null,
+    detailsLoading: false,
+    detailsFetched: false,
+    lastFetchedHandle: null,
 }
+
+export const fetchAvatarDetails = createAsyncThunk(
+    "avatar/fetchDetails",
+    async (userName: string, { rejectWithValue }) => {
+        try {
+            const response = await getAvatarDetails(userName);
+            const record = response.data?.data?.[0] as AvatarDetailsRecord | undefined;
+            return { record, userName };
+        } catch (error: any) {
+            return rejectWithValue(error?.response?.data ?? { message: "Unable to fetch avatar details" });
+        }
+    }
+);
 
 const avatarSlice = createSlice({
     name: "avatar",
@@ -68,6 +88,48 @@ const avatarSlice = createSlice({
 
             return { ...state, ...payload };
         },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchAvatarDetails.pending, (state) => {
+                state.detailsLoading = true;
+            })
+            .addCase(fetchAvatarDetails.fulfilled, (state, action) => {
+                state.detailsLoading = false;
+                state.detailsFetched = true;
+                state.lastFetchedHandle = action.payload?.userName ?? null;
+
+                const details = action.payload?.record;
+                if (!details) {
+                    return;
+                }
+
+                state.fullName = details.name ?? state.fullName;
+                state.handle = details.agent_id ?? state.handle;
+                state.headline = details.headline ?? state.headline;
+                state.location = details.location ?? state.location;
+                state.bio = details.bio ?? state.bio;
+                state.expertise = Array.isArray(details.skills) ? details.skills : state.expertise;
+
+                const personality = details.personality;
+                if (personality) {
+                    const normalized = personality.toLowerCase();
+                    const allowed = ["professional", "friendly", "humorous", "custom"];
+                    if (allowed.includes(normalized)) {
+                        state.personalityType = normalized;
+                        if (normalized !== "custom") {
+                            state.customTone = "";
+                        }
+                    } else {
+                        state.personalityType = "custom";
+                        state.customTone = personality;
+                    }
+                }
+            })
+            .addCase(fetchAvatarDetails.rejected, (state) => {
+                state.detailsLoading = false;
+                state.detailsFetched = false;
+            });
     }
 });
 

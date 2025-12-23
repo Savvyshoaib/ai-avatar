@@ -29,6 +29,7 @@ export function HandleStep({
   const [buttonText, setButtonText] = useState<string>("Confirm");
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const url = new URL(window.location.href);
+  const getOlivData = JSON.parse(localStorage.getItem("olivData") || "{}");
 
   // Restore verified state when coming back to this step
   useEffect(() => {
@@ -60,7 +61,8 @@ export function HandleStep({
 
       await createAvatar({
         user_name: handleValue,
-        oliv_id,
+        email: getOlivData.email,
+        oliv_id: getOlivData.id,
       });
 
       // If we reach here, API returned 2xx, so success

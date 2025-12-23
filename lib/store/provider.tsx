@@ -4,6 +4,8 @@ import { useRef, useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { makeStore, AppStore } from './store';
 import { setStore } from './storeRef';
+import { fetchAvatarDetails } from './slices/avatarSlice';
+import { getStoredUserName } from '@/lib/utils/userStorage';
 
 export default function StoreProvider({
   children,
@@ -17,9 +19,22 @@ export default function StoreProvider({
   }
 
   useEffect(() => {
+    const store = storeRef.current;
+    if (!store) return;
+
     // Set store reference for axios interceptors
-    if (storeRef.current) {
-      setStore(storeRef.current);
+    setStore(store);
+
+    const userName = getStoredUserName();
+    if (!userName) return;
+
+    const state = store.getState();
+    const alreadyFetched =
+      state.avatar.detailsFetched &&
+      state.avatar.lastFetchedHandle === userName;
+
+    if (!alreadyFetched) {
+      store.dispatch(fetchAvatarDetails(userName));
     }
   }, []);
 
